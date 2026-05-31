@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<meta name="description" content="Pediatri cep araçları — portal">
+<title>Cep · Pediatri</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-elev: #161b22;
+    --bg-elev-2: #1c232c;
+    --border: #2a3038;
+    --border-strong: #3a424c;
+    --text: #e6edf3;
+    --text-mute: #8b949e;
+    --text-dim: #6e7681;
+    --accent: #7ee2c1;
+    --accent-dim: #4d9b86;
+    --warn: #d4a574;
+    --crit: #e06c75;
+    --info: #79c0ff;
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: var(--sans); background: var(--bg);
+    color: var(--text); line-height: 1.5;
+    min-height: 100vh; padding-bottom: env(safe-area-inset-bottom);
+    -webkit-tap-highlight-color: transparent;
+  }
+  header {
+    border-bottom: 1px solid var(--border); background: var(--bg);
+  }
+  .header-inner {
+    max-width: 880px; margin: 0 auto; padding: 18px 16px 14px;
+  }
+  .brand {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 10px; margin-bottom: 12px;
+  }
+  .brand-left { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .brand-mark {
+    font-family: var(--mono); font-weight: 700; font-size: 22px;
+    color: var(--accent); letter-spacing: -0.02em;
+  }
+  .brand-mark::before { content: '▍'; margin-right: 6px; color: var(--accent); }
+  .brand-sub {
+    font-family: var(--mono); font-size: 12px; color: var(--text-dim);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .brand-info {
+    font-family: var(--mono); font-size: 10.5px; color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+
+  .search-wrap {
+    position: relative;
+  }
+  .search {
+    width: 100%;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    color: var(--text); padding: 10px 12px 10px 36px;
+    border-radius: 8px;
+    font-family: var(--sans); font-size: 14px;
+    -webkit-appearance: none; appearance: none;
+  }
+  .search:focus { outline: none; border-color: var(--accent-dim); }
+  .search::placeholder { color: var(--text-dim); }
+  .search-icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--text-dim); font-family: var(--mono); font-size: 14px;
+    pointer-events: none;
+  }
+
+  main { max-width: 880px; margin: 0 auto; padding: 16px 16px 80px; }
+
+  .cat {
+    margin-bottom: 24px;
+  }
+  .cat-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+  .cat-title {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .cat-count {
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+
+  .cards {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 540px) {
+    .cards { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px;
+    text-decoration: none; color: inherit;
+    transition: all 0.15s;
+    display: flex; flex-direction: column; gap: 6px;
+    cursor: pointer;
+    position: relative;
+    border-left: 3px solid var(--accent-dim);
+  }
+  .card:hover {
+    border-color: var(--accent);
+    background: var(--bg-elev-2);
+    transform: translateY(-1px);
+  }
+  .card.crit { border-left-color: var(--crit); }
+  .card.crit:hover { border-color: var(--crit); }
+  .card.info { border-left-color: var(--info); }
+  .card.info:hover { border-color: var(--info); }
+
+  .card-name {
+    font-family: var(--mono); font-size: 14px; font-weight: 700;
+    color: var(--text); letter-spacing: -0.01em;
+  }
+  .card-desc {
+    font-size: 12px; color: var(--text-mute); line-height: 1.5;
+  }
+  .card-meta {
+    display: flex; gap: 10px; align-items: baseline;
+    margin-top: 4px;
+  }
+  .card-tag {
+    font-family: var(--mono); font-size: 9.5px; color: var(--text-dim);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .card-ver {
+    font-family: var(--mono); font-size: 9.5px; color: var(--accent-dim);
+    letter-spacing: 0.04em; margin-left: auto;
+  }
+
+  .cat.empty .cards { display: none; }
+  .cat.empty .cat-head { opacity: 0.3; }
+
+  .no-results {
+    text-align: center; padding: 40px 20px;
+    color: var(--text-dim);
+    font-family: var(--mono); font-size: 13px;
+    display: none;
+  }
+  .no-results.show { display: block; }
+
+  .foot {
+    text-align: center; padding: 24px 16px 12px;
+    font-family: var(--mono); font-size: 10.5px;
+    color: var(--text-dim); letter-spacing: 0.04em;
+    line-height: 1.6;
+  }
+  .foot a {
+    color: var(--accent-dim); text-decoration: none;
+  }
+  .foot a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-left">
+        <span class="brand-mark">cep</span>
+        <span class="brand-sub">pediatri</span>
+      </div>
+      <span class="brand-info" id="brand-info">10 araç</span>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" class="search" id="search" placeholder="Ara: anafilaksi, qtc, westley, dka..." autocomplete="off">
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- HESAPLAMA & DOZ -->
+  <div class="cat" data-cat="hesap">
+    <div class="cat-head">
+      <span class="cat-title">Hesaplama & Doz</span>
+      <span class="cat-count">3 araç</span>
+    </div>
+    <div class="cards">
+      <a class="card" href="https://osmancbuk58-cyber.github.io/sivi-cep/" target="_blank" rel="noopener" data-tags="sıvı elektrolit idame defisit şok holliday segar na k mg ca p hiperna hipona adrogue madias">
+        <div class="card-name">Sıvı · Cep</div>
+        <div class="card-desc">İdame · defisit · şok · Na/K/Mg/Ca/P · Adrogue-Madias</div>
+        <div class="card-meta">
+          <span class="card-tag">7 sekme</span>
+          <span class="card-ver">v0.1</span>
+        </div>
+      </a>
+      <a class="card" href="https://osmancbuk58-cyber.github.io/dka-cep/" target="_blank" rel="noopener" data-tags="dka ketoasidoz diyabet ispad pecarn fluid insülin sıvı beyin ödemi mannitol bikarbonat">
+        <div class="card-name">DKA · Cep</div>
+        <div class="card-desc">ISPAD 2022 + PECARN FLUID · sıvı + insülin + K + beyin ödemi</div>
+        <div class="card-meta">
+          <span class="card-tag">6 sekme</span>
+          <span class="card-ver">v0.1</span>
+        </div>
+      </a>
+      <a class="card" href="https://osmancbuk58-cyber.github.io/yb-infuzyon/" target="_blank" rel="noopener" data-tags="yoğun bakım infüzyon midazolam fentanil precedex remifentanil ketamin dopamin dobutamin adrenalin noradrenalin milrinon levosimendan esmolol terlipressin furosemid oktreotid heparin insülin titrasyon vazoaktif sedasyon">
+        <div class="card-name">YB · İnfüzyon</div>
+        <div class="card-desc">16 ilaç titrasyon konsolu · sedasyon · vazoaktif · diğer</div>
+        <div class="card-meta">
+          <span class="card-tag">titrasyon</span>
+          <span class="card-ver">v0.2</span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- YORUM -->
+  <div class="cat" data-cat="yorum">
+    <div class="cat-head">
+      <span class="cat-title">Yorum</span>
+      <span class="cat-count">3 araç</span>
+    </div>
+    <div class="cards">
+      <a class="card" href="https://osmancbuk58-cyber.github.io/kangazi-cep/" target="_blank" rel="noopener" data-tags="kan gazı asit baz ph pco2 hco3 winter anyon açığı delta mudpiles salisilat laktat rta venöz arter">
+        <div class="card-name">Kan Gazı · Cep</div>
+        <div class="card-desc">5 adım analiz · kompansasyon · AG · delta-delta · etiyoloji</div>
+        <div class="card-meta">
+          <span class="card-tag">venöz/arter</span>
+          <span class="card-ver">v0.1</span>
+        </div>
+      </a>
+      <a class="card" href="https://osmancbuk58-cyber.github.io/ekg-cep/" target="_blank" rel="noopener" data-tags="ekg elektrokardiyogram qt qtc bazett fridericia eksen aksis patern hiperkalemi hipokalemi wpw delta dalga brugada svt vt av blok kalp hızı">
+        <div class="card-name">EKG · Cep</div>
+        <div class="card-desc">Küçük kare girişli · HR · PR/QRS · QTc · eksen · patern</div>
+        <div class="card-meta">
+          <span class="card-tag">5 modül</span>
+          <span class="card-ver">v0.1</span>
+        </div>
+      </a>
+      <a class="card" href="https://osmancbuk58-cyber.github.io/tubul-cep/" target="_blank" rel="noopener" data-tags="tübüler fonksiyon fe fraksiyonel atılım tmp gfr schwartz egfr ttkg uag rta fanconi proksimal distal hipofosfat hipokalemi sjögren amfoterisin">
+        <div class="card-name">Tübül · Cep</div>
+        <div class="card-desc">FE · TmP/GFR · Schwartz eGFR · UAG · spot oranlar · referans</div>
+        <div class="card-meta">
+          <span class="card-tag">8 sekme</span>
+          <span class="card-ver">v0.1</span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ACİL REFLEKS -->
+  <div class="cat" data-cat="acil">
+    <div class="cat-head">
+      <span class="cat-title">Acil Refleks</span>
+      <span class="cat-count">2 araç</span>
+    </div>
+    <div class="cards">
+      <a class="card crit" href="https://osmancbuk58-cyber.github.io/acil-cep/" target="_blank" rel="noopener" data-tags="acil arrest pals adrenalin anafilaksi status epileptikus sepsis nrp yenidoğan resüsitasyon svt adenozin hiperkalemi hipoglisemi torsade defibrilasyon kardiyoversiyon">
+        <div class="card-name">Acil · Cep</div>
+        <div class="card-desc">Arrest · Anafilaksi · Status · Sepsis · NRP · SVT · HiperK · HipoGlu</div>
+        <div class="card-meta">
+          <span class="card-tag">8 sekme</span>
+          <span class="card-ver">v0.1</span>
+        </div>
+      </a>
+      <a class="card info" href="https://osmancbuk58-cyber.github.io/solunum-cep/" target="_blank" rel="noopener" data-tags="solunum astım salbutamol ipratropium magnezyum krup westley deksametazon adrenalin nebül bronşiolit hfnc apne yabancı cisim heimlich aspirasyon">
+        <div class="card-name">Solunum · Cep</div>
+        <div class="card-desc">Astım · Krup (Westley) · Bronşiolit · Yabancı cisim</div>
+        <div class="card-meta">
+          <span class="card-tag">4 sekme</span>
+          <span class="card-ver">v0.1</span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- KARAR DESTEK -->
+  <div class="cat" data-cat="karar">
+    <div class="cat-head">
+      <span class="cat-title">Karar Destek</span>
+      <span class="cat-count">2 araç</span>
+    </div>
+    <div class="cards">
+      <a class="card info" href="https://osmancbuk58-cyber.github.io/skor-cep/" target="_blank" rel="noopener" data-tags="skor ateşli rochester step by step nice traffic light pecarn kafa travması apendisit pas alvarado mcisaac centor farenjit gks glasgow avpu ağrı wong baker flacc nrs pews pim mortalite">
+        <div class="card-name">Skor · Cep</div>
+        <div class="card-desc">Ateşli · PECARN · PAS · McIsaac · GKS · Ağrı · PEWS+PIM</div>
+        <div class="card-meta">
+          <span class="card-tag">7 sekme</span>
+          <span class="card-ver">v0.1</span>
+        </div>
+      </a>
+      <a class="card" href="https://osmancbuk58-cyber.github.io/antropometri-cep/" target="_blank" rel="noopener" data-tags="antropometri büyüme z skor persentil bmi bsa mosteller boy ağırlık baş çevresi mid parental hedef tanner prekoks puberte düzeltilmiş yaş who cdc">
+        <div class="card-name">Antropometri · Cep</div>
+        <div class="card-desc">Büyüme (WHO/CDC) · boy hedefi · düzeltilmiş yaş · Tanner</div>
+        <div class="card-meta">
+          <span class="card-tag">4 sekme</span>
+          <span class="card-ver">v0.1</span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="no-results" id="no-results">
+    Eşleşen araç yok.
+  </div>
+
+  <div class="foot">
+    cep · pediatri · v0.1 · osman çubuk<br>
+    <span style="color: var(--text-dim);">arşiv için <a href="https://github.com/osmancbuk58-cyber" target="_blank" rel="noopener">github</a></span>
+  </div>
+
+</main>
+
+<script>
+const search = document.getElementById('search');
+const cards = document.querySelectorAll('.card');
+const cats = document.querySelectorAll('.cat');
+const noResults = document.getElementById('no-results');
+const brandInfo = document.getElementById('brand-info');
+
+function normalize(s) {
+  return s.toLowerCase()
+    .replace(/ı/g, 'i').replace(/İ/g, 'i')
+    .replace(/ş/g, 's').replace(/Ş/g, 's')
+    .replace(/ğ/g, 'g').replace(/Ğ/g, 'g')
+    .replace(/ü/g, 'u').replace(/Ü/g, 'u')
+    .replace(/ö/g, 'o').replace(/Ö/g, 'o')
+    .replace(/ç/g, 'c').replace(/Ç/g, 'c');
+}
+
+search.addEventListener('input', () => {
+  const q = normalize(search.value.trim());
+  let visible = 0;
+
+  cards.forEach(card => {
+    const tags = normalize(card.dataset.tags || '');
+    const name = normalize(card.querySelector('.card-name').textContent);
+    const desc = normalize(card.querySelector('.card-desc').textContent);
+    const haystack = `${name} ${desc} ${tags}`;
+
+    if (q === '' || haystack.includes(q)) {
+      card.style.display = 'flex';
+      visible++;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  // Kategorileri güncelle (hiç görünen kart yoksa kategoriyi soluklaştır)
+  cats.forEach(cat => {
+    const visibleCards = cat.querySelectorAll('.card[style*="flex"], .card:not([style*="none"])');
+    const anyVisible = Array.from(cat.querySelectorAll('.card')).some(c => c.style.display !== 'none');
+    cat.style.display = anyVisible ? 'block' : 'none';
+  });
+
+  noResults.classList.toggle('show', visible === 0 && q !== '');
+  brandInfo.textContent = q === '' ? '10 araç' : `${visible} eşleşme`;
+});
+</script>
+
+</body>
+</html>
