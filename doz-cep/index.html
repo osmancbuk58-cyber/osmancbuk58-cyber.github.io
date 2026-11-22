@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Doz · Cep">
+<meta name="theme-color" content="#0B6B62">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>Doz · Cep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Düzen: tek sütun; üstte yapışkan kilo çubuğu, altında seçim çipleri ve order kartı */
+  --bg:#EDF1EF;
+  --surface:#FFFFFF;
+  --ink:#13201C;
+  --muted:#56655F;
+  --line:#D2DBD7;
+  --accent:#0B6B62;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#DCEFEA;
+  --warn-bg:#FFF3D6;
+  --warn-ink:#674300;
+  --warn-line:#E6C46C;
+  --font-ui:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1513; --surface:#17201D; --ink:#E4ECE8; --muted:#95A59F; --line:#2C3934;
+    --accent:#3FB8AC; --accent-ink:#04201C; --accent-soft:#163833;
+    --warn-bg:#33290F; --warn-ink:#F2D58C; --warn-line:#6B5520;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1513; --surface:#17201D; --ink:#E4ECE8; --muted:#95A59F; --line:#2C3934;
+  --accent:#3FB8AC; --accent-ink:#04201C; --accent-soft:#163833;
+  --warn-bg:#33290F; --warn-ink:#F2D58C; --warn-line:#6B5520;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--font-ui)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 40px}
+header.top{padding:18px 0 8px}
+header.top h1{margin:0;font-size:22px;font-weight:600;letter-spacing:-0.01em;text-wrap:balance}
+header.top p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px 10px}
+.field label{font-size:13px;color:var(--muted);font-weight:500}
+.field input{flex:1;min-width:0;width:100%;border:0;background:transparent;font:600 22px/1.2 var(--font-mono);color:var(--ink);padding:6px 0;outline:none;font-variant-numeric:tabular-nums}
+.field input::placeholder{color:var(--muted);opacity:.55;font-weight:400;font-size:16px}
+.field span{color:var(--muted);font-size:13px}
+.field:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.field.opt input{font-size:18px}
+.seg{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{border:0;background:transparent;color:var(--muted);font:600 14.5px var(--font-ui);padding:9px 4px;border-radius:8px;cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 15px/1.2 var(--font-ui);padding:9px 12px;border-radius:8px;cursor:pointer;min-height:40px}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip:focus-visible,.seg button:focus-visible,.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.groups{margin-top:14px}
+.modes{margin-top:10px}
+.modes .chip,.druglist .chip{font-size:14px;padding:7px 10px;min-height:36px;background:transparent}
+.modes .chip.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.druglist .chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.head{margin:12px 0 0;color:var(--muted);font-size:14px;max-width:65ch}
+.params{display:grid;gap:12px;margin-top:14px}
+.params:empty{display:none}
+.plabel{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.plabel span{font-weight:400;color:var(--muted)}
+.cust{width:92px;border:1px dashed var(--line);background:var(--surface);color:var(--ink);font:500 16px var(--font-mono);padding:7px 10px;border-radius:8px;min-height:40px}
+.cust:focus{outline:2px solid var(--accent);border-style:solid}
+#res{margin-top:16px}
+.result{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:14px 14px 12px}
+.result.empty{border-left-color:var(--line);color:var(--muted)}
+.result.empty p{margin:0}
+.big{font:600 30px/1.1 var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:-0.01em;overflow-wrap:anywhere}
+.sub{color:var(--muted);font-size:14px;margin-top:4px}
+.warn{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line);border-radius:8px;padding:8px 10px;margin:10px 0 0;font-size:14px}
+.order{margin:12px 0 0;padding:0 0 0 24px;font:400 14.5px/1.5 var(--font-mono);display:grid;gap:6px;overflow-wrap:anywhere}
+.copy{width:100%;margin-top:12px;border:0;background:var(--accent);color:var(--accent-ink);font:600 16px var(--font-ui);padding:12px;border-radius:9px;cursor:pointer}
+.info{margin:12px 0 0;padding:10px 0 0 18px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;display:grid;gap:4px}
+.search{margin-top:14px}
+.search label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.search input{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:16px var(--font-ui);padding:10px 12px;border-radius:9px}
+.search input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+.druglist{margin-top:10px}
+#abcard{margin-top:18px;scroll-margin-top:150px}
+.drughead h2{margin:0;font-size:20px;font-weight:600;text-wrap:balance}
+.drughead p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.hint,.none{color:var(--muted);font-size:14px;margin:0}
+.forms{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;display:grid;gap:6px}
+.fhead{font-size:13px;font-weight:600}
+.frow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;width:100%;text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:8px 10px;font:14px/1.35 var(--font-ui);cursor:pointer}
+.frow .fname{min-width:0}
+.frow .famt{font:600 14px/1.35 var(--font-mono);font-variant-numeric:tabular-nums;text-align:right;flex-shrink:0;max-width:55%}
+.frow.mid .famt{color:var(--warn-ink)}
+.frow.no{cursor:default;opacity:.7}
+.frow.no .famt{font:400 12.5px/1.35 var(--font-ui);color:var(--muted)}
+.frow:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fnote{font-size:12.5px;color:var(--muted);margin:2px 0 0}
+footer{margin-top:28px;color:var(--muted);font-size:12.5px;max-width:65ch}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Doz · Cep</h1>
+    <p>Hacettepe protokol dozları · elektrolit, antibiyotik, immünoloji profilaksisi · hemşire orderı</p>
+  </header>
+  <div class="bar">
+    <div class="field"><label for="kg">Kilo</label><input id="kg" inputmode="decimal" autocomplete="off" placeholder="örn. 12,5"><span>kg</span></div>
+    <div class="field opt"><label for="boy">Boy</label><input id="boy" inputmode="decimal" autocomplete="off" placeholder="VYA için"><span>cm</span></div>
+    <div class="seg" role="tablist" aria-label="Bölüm">
+      <button type="button" id="sec-el" data-sec="el" class="on" role="tab" aria-selected="true">Elektrolit</button>
+      <button type="button" id="sec-ab" data-sec="ab" role="tab" aria-selected="false">Antibiyotik</button>
+      <button type="button" id="sec-pr" data-sec="pr" role="tab" aria-selected="false">Profilaksi</button>
+    </div>
+  </div>
+  <main id="main"></main>
+  <footer>Dozlar HÜTF asistan el kitabından (POKEMON defteri) ve immünoloji profilaksi listesinden. Piyasa formları TİTCK kısa ürün bilgileri ve kullanma talimatlarıyla doğrulandı; firma ve piyasa durumu değişebilir. Protokolle literatürün ayrıştığı yerlerde sarı uyarı çıkar. Boy girilmezse VYA kilodan tahmin edilir. Hasta verisi kaydedilmez.</footer>
+</div>
+<script>
+"use strict";
+
+/* ---------- biçim ---------- */
+const fx = (x, d) => {
+  if (!isFinite(x)) return "–";
+  const p = Math.pow(10, d);
+  let s = (Math.round(x * p) / p).toFixed(d);
+  if (d > 0) s = s.replace(/\.?0+$/, "");
+  return s.replace(".", ",");
+};
+const vol = x => fx(x, x < 20 ? 1 : 0);
+const mg = x => fx(x, x < 10 ? 1 : 0);
+const meq = x => fx(x, 1);
+const num = s => {
+  if (s == null) return NaN;
+  s = String(s).trim().replace(",", ".");
+  return s === "" ? NaN : Number(s);
+};
+const FQ = {1: `24 saatte bir (1x1)`, 2: `12 saatte bir (2x1)`, 3: `8 saatte bir (3x1)`, 4: `6 saatte bir (4x1)`};
+const FQS = {1: `24 saatte bir`, 2: `12 saatte bir`, 3: `8 saatte bir`, 4: `6 saatte bir`};
+function bsa(kg, boy) {
+  if (boy && boy > 30 && boy < 230) return {v: Math.sqrt(kg * boy / 3600), est: false};
+  return {v: (4 * kg + 7) / (kg + 90), est: true};
+}
+const bsaTxt = s => `VYA ${fx(s.v, 2)} m²` + (s.est ? ` (kilodan tahmini; boy girersen kesinleşir)` : ` (boy ve kilodan)`);
+
+/* ---------- sabitler ---------- */
+const CA = 9.41;      // %10 Ca Picken / Ca glukonat: mg elemental Ca / mL (protokol TPN katsayısı: 1 mEq = 2,125 mL)
+const CA_MAX = 30;    // mL/doz: 3 g Ca glukonat ≈ 280 mg elemental Ca
+const MGO_TAB = 613.2; // Magnorm 365 mg: 365 mg elemental Mg = 613,2 mg Mg oksit
+
+/* ---------- K içeren infüzyonlarda sulandırma ve süre ---------- */
+function kPlan(k, route, h0) {
+  const w = [];
+  const conc = route === "s" ? 0.2 : 0.06; // mEq/mL: periferik 60 mEq/L (protokol), santral 200 mEq/L
+  let tot = Math.max(k / conc, k);
+  tot = tot > 20 ? Math.ceil(tot / 5) * 5 : Math.ceil(tot * 10) / 10;
+  const maxR = route === "s" ? 20 : 10;
+  let h = h0;
+  const need = Math.ceil(k / maxR - 1e-9);
+  if (need > h) { h = need; w.push(`Saatte en fazla ${maxR} mEq K sınırı için süre ${h} saate uzatıldı.`); }
+  return {tot, sf: Math.max(tot - k, 0), h, rate: k / h, w};
+}
+const ROUTE = [{v: "p", t: `Periferik`}, {v: "s", t: `Santral`}];
+const IDAME = [{v: "m2", t: `1500 mL/m²/gün`}, {v: "kg", t: `150 mL/kg/gün`}];
+const PDOSE = [{v: 0.15, t: `0,15 mmol/kg · 6 saat`}, {v: 0.3, t: `0,3 mmol/kg · 6 saat`}, {v: 0.5, t: `0,5 mmol/kg · 6 saat`}, {v: "prot", t: `Protokol: 1 mL/kg · 1 saat`}];
+const PROT_P_WARN = `Literatür 0,08-0,5 mmol/kg dozunu 4-6 saatte önerir; hızlı fosfat hipokalsemi yapabilir.`;
+
+/* ================= ELEKTROLİTLER ================= */
+const EL = [
+ {id: "ca", t: `Kalsiyum`, m: [
+  {id: "ca-iv", t: `IV replasman`,
+   h: `%10 Ca Picken / Ca glukonat: 1 mL ≈ 9,4 mg elemental Ca (0,47 mEq). Doz elemental Ca, kg başına gün. Yenidoğan 20-75, infant ve çocuk 20-45 mg/kg/gün, 6 saatte bir.`,
+   p: [{k: "d", l: `Doz`, u: `mg/kg/gün elemental`, o: [20, 25, 30, 45, 75], def: 25, custom: true}],
+   c: (kg, p) => {
+     let ml = p.d * kg / 4 / CA; const w = [];
+     if (ml > CA_MAX) { ml = CA_MAX; w.push(`Doz başına maks 30 mL (3 g Ca glukonat) ile sınırlandı.`); }
+     const e = ml * CA;
+     return {big: `${vol(ml)} mL`, sub: `doz başına · 6 saatte bir · ${fx(e, 1)} mg elemental Ca`, w,
+       L: [`%10 Ca Picken ${vol(ml)} mL + ${vol(ml)} mL SF, 1 saatte IV infüzyon, ${FQ[4]}`, `Fosfat ve bikarbonat içeren mayi ile aynı yoldan verilmeyecek`],
+       I: [`Doz başına ${fx(e, 1)} mg elemental Ca (${meq(e / 20)} mEq), günlük ${mg(e * 4)} mg`]};
+   }},
+  {id: "ca-tet", t: `Tetani`,
+   h: `10-20 mg/kg/doz elemental Ca, 5-10 dakikada puşe. Gerekirse 6 saat sonra tekrar, günlük maks 45 mg/kg.`,
+   p: [{k: "d", l: `Doz`, u: `mg/kg/doz elemental`, o: [10, 15, 20], def: 10}],
+   c: (kg, p) => {
+     let ml = p.d * kg / CA; const w = [];
+     if (ml > CA_MAX) { ml = CA_MAX; w.push(`Doz başına maks 30 mL (3 g Ca glukonat) ile sınırlandı.`); }
+     return {big: `${vol(ml)} mL`, sub: `tek doz · ${mg(ml * CA)} mg elemental Ca`, w,
+       L: [`%10 Ca Picken ${vol(ml)} mL + ${vol(ml)} mL SF, 10 dakikada IV puşe, kalp monitörü eşliğinde`, `Fosfat ve bikarbonat ile aynı yoldan verilmeyecek`],
+       I: [`Gerekirse 6 saat sonra tekrarlanır; günlük maks 45 mg/kg elemental Ca`]};
+   }},
+  {id: "ca-arr", t: `Kardiyak arrest`,
+   h: `10 mg/kg/doz elemental Ca, gerekirse 10 dakikada bir.`,
+   p: [],
+   c: (kg) => {
+     let ml = 10 * kg / CA; const w = [];
+     if (ml > CA_MAX) { ml = CA_MAX; w.push(`Üst sınır 30 mL (≈280 mg elemental Ca) uygulandı.`); }
+     return {big: `${vol(ml)} mL`, sub: `tek doz · ${mg(ml * CA)} mg elemental Ca`, w,
+       L: [`%10 Ca Picken ${vol(ml)} mL IV/İO yavaş puşe, gerekirse 10 dakikada bir tekrar`],
+       I: [`Protokoldeki "max 270 gr/doz" yazım hatası; üst sınır olarak 30 mL (≈280 mg elemental Ca) alındı`]};
+   }},
+  {id: "ca-lak", t: `Ca laktat PO`,
+   h: `1 g Ca laktat = 130 mg elemental Ca (6,5 mEq). Yenidoğan ve infant 40-45, çocuk 45 mg/kg/gün elemental. Maks 8 g/gün.`,
+   p: [{k: "d", l: `Doz`, u: `mg/kg/gün elemental`, o: [40, 45], def: 45, custom: true},
+       {k: "n", l: `Sıklık`, o: [{v: 3, t: `3x`}, {v: 4, t: `4x`}], def: 4}],
+   c: (kg, p) => {
+     let salt = p.d * kg / p.n / 0.13; const w = [];
+     if (salt * p.n > 8000) { salt = 8000 / p.n; w.push(`Günlük maks 8 g Ca laktat ile sınırlandı.`); }
+     const s = Math.round(salt / 10) * 10;
+     return {big: `${mg(s)} mg`, sub: `Ca laktat · doz başına · ${FQS[p.n]}`, w,
+       L: [`Ca laktat ${mg(s)} mg PO, ${FQ[p.n]}`],
+       I: [`Doz başına ${mg(s * 0.13)} mg elemental Ca`]};
+   }},
+  {id: "ca-glu", t: `Ca glukonat PO`,
+   h: `1 g Ca glukonat = 90 mg elemental Ca (4,5 mEq). İnfant 40-75, çocuk 20-45 mg/kg/gün elemental, 6 saatte bir.`,
+   p: [{k: "d", l: `Doz`, u: `mg/kg/gün elemental`, o: [20, 30, 45, 75], def: 45, custom: true}],
+   c: (kg, p) => {
+     const s = Math.round(p.d * kg / 4 / 0.09 / 10) * 10;
+     return {big: `${mg(s)} mg`, sub: `Ca glukonat · doz başına · 6 saatte bir`, w: [],
+       L: [`Ca glukonat ${mg(s)} mg PO, ${FQ[4]}`],
+       I: [`Doz başına ${mg(s * 0.09)} mg elemental Ca`]};
+   }}
+ ]},
+
+ {id: "mg", t: `Magnezyum`, m: [
+  {id: "mg-iv", t: `MgSO4 IV`,
+   h: `%15 MgSO4: 1 mL = 150 mg MgSO4. Doz MgSO4 tuzu üzerinden, kg başına DOZ: 25-50 mg/kg/doz, 6 saatte bir.`,
+   p: [{k: "d", l: `Doz`, u: `mg/kg/doz MgSO4`, o: [25, 50], def: 25, custom: true}],
+   c: (kg, p) => {
+     let m = p.d * kg; const w = [];
+     if (m > 2000) { m = 2000; w.push(`Doz başına maks 2 g MgSO4 ile sınırlandı (literatür).`); }
+     const ml = m / 150;
+     return {big: `${vol(ml)} mL`, sub: `doz başına · 6 saatte bir · ${mg(m)} mg MgSO4`, w,
+       L: [`%15 MgSO4 ${vol(ml)} mL + ${vol(ml * 4)} mL SF, 2 saatte IV infüzyon, ${FQ[4]}`],
+       I: [`≈ ${mg(m * 0.0986)} mg elemental Mg (${fx(m / 246.5, 2)} mmol)`, `Böbrek fonksiyonu bozuksa doz azaltılır`]};
+   }},
+  {id: "mg-po", t: `Magnorm PO`,
+   h: `Magnorm 365 mg efervesan tablet: 365 mg elemental Mg = 613 mg Mg oksit. Protokol dozu Mg oksit üzerinden: 25-50 mg/kg/doz, 6 saatte bir.`,
+   p: [{k: "d", l: `Doz`, u: `mg/kg/doz Mg oksit`, o: [25, 50], def: 25, custom: true}],
+   c: (kg, p) => {
+     let mo = p.d * kg; const w = [];
+     if (mo > MGO_TAB) { mo = MGO_TAB; w.push(`Erişkin tek dozu olan 1 tablet ile sınırlandı.`); }
+     const full = mo >= MGO_TAB - 0.01;
+     const ml = mo / MGO_TAB * 60;
+     return {big: full ? `1 tablet` : `${vol(ml)} mL`, sub: full ? `doz başına · 6 saatte bir` : `60 mL suda eritilmiş tabletten · ${mg(mo)} mg Mg oksit`, w,
+       L: [full ? `Magnorm 365 mg efervesan tablet 1 tablet suda eritilerek PO, ${FQ[4]}` : `Magnorm 365 mg efervesan tablet 1 tablet 60 mL suda eritilip ${vol(ml)} mL PO, ${FQ[4]}`],
+       I: [`≈ ${mg(mo * 0.5952)} mg elemental Mg/doz`, `365 mg tabletteki elemental Mg miktarıdır; dozu 365'e bölmek 1,7 kat fazla verdirir`, `Ciddi böbrek yetmezliğinde verilmez`]};
+   }}
+ ]},
+
+ {id: "k", t: `Potasyum`, m: [
+  {id: "k-id", t: `KCl idame (mayiye)`,
+   h: `KCl ve KPO4: 1 mL = 1 mEq K. İdame 1-3 mEq/kg/gün, 24 saatte.`,
+   p: [{k: "d", l: `Doz`, u: `mEq/kg/gün`, o: [1, 2, 3], def: 2, custom: true}],
+   c: (kg, p) => {
+     const q = p.d * kg;
+     return {big: `${meq(q)} mEq`, sub: `günlük · ${vol(q)} mL KCl`, w: [],
+       L: [`KCl ${meq(q)} mEq/gün (${vol(q)} mL), günlük mayi içinde 24 saatte`],
+       I: [`Periferik yolda ≤60 mEq/L için günlük mayi en az ${fx(q / 0.06, 0)} mL olmalı`]};
+   }},
+  {id: "k-yuk", t: `KCl yükleme`,
+   h: `Protokol: K<2,5 ya da 2,5-3 arasında semptom/EKG değişikliği varsa 1 mL/kg, 1 saatte. Saatte 5 mEq üstü monitör, 60 mEq/L üstü santral yol.`,
+   p: [{k: "d", l: `Doz`, u: `mEq/kg`, o: [0.5, 1], def: 1},
+       {k: "r", l: `Yol`, o: ROUTE, def: "p"},
+       {k: "h", l: `Süre`, o: [{v: 1, t: `1 saat`}, {v: 2, t: `2 saat`}], def: 1}],
+   c: (kg, p) => {
+     let k = p.d * kg; const w = [];
+     if (k > 40) { k = 40; w.push(`Doz başına maks 40 mEq ile sınırlandı.`); }
+     const P = kPlan(k, p.r, p.h); w.push(...P.w);
+     if (p.r === "p" && P.tot / kg > 10) w.push(`Periferik sulandırma ${fx(P.tot / kg, 0)} mL/kg sıvı getiriyor; santral yol düşün.`);
+     const L = [`KCl ${vol(k)} mL (${meq(k)} mEq) + ${vol(P.sf)} mL SF, toplam ${vol(P.tot)} mL, ${P.h} saatte IV infüzyon`];
+     if (p.r === "s") L.push(`Santral venöz kateterden verilecek`);
+     if (P.rate > 5) L.push(`Kalp monitörü eşliğinde verilecek`);
+     return {big: `${vol(k)} mL KCl`, sub: `${meq(k)} mEq · ${P.h} saatte · ${meq(P.rate)} mEq/saat`, w, L,
+       I: [`Konsantrasyon ${fx(k / P.tot * 1000, 0)} mEq/L (periferik sınır 60 mEq/L)`, `Hız ${fx(P.rate / kg, 2)} mEq/kg/saat`]};
+   }},
+  {id: "k-po", t: `Kalinor PO`,
+   h: `Kalinor efervesan tablet: 40 mEq K. Günlük doz 4 eşit dozda, 6 saatte bir.`,
+   p: [{k: "d", l: `Doz`, u: `mEq/kg/gün`, o: [1, 2, 3], def: 2, custom: true}],
+   c: (kg, p) => {
+     let q = p.d * kg / 4; const w = [];
+     if (q > 40) { q = 40; w.push(`Doz başına 1 tablet (40 mEq) ile sınırlandı.`); }
+     const full = q >= 39.99;
+     return {big: full ? `1 tablet` : `${vol(q)} mL`, sub: full ? `40 mEq · 6 saatte bir` : `40 mL suda eritilmiş tabletten · ${meq(q)} mEq`, w,
+       L: [full ? `Kalinor efervesan tablet 1 tablet suda eritilerek PO, ${FQ[4]}` : `Kalinor efervesan tablet 1 tablet 40 mL suda eritilip ${vol(q)} mL (${meq(q)} mEq) PO, ${FQ[4]}`],
+       I: [`40 mL suda eritilince 1 mL = 1 mEq K`]};
+   }}
+ ]},
+
+ {id: "p", t: `Fosfat`, m: [
+  {id: "p-yuk", t: `KPO4 yükleme`,
+   h: `KPO4: 1 mL = 1 mEq K + 0,6 mmol P. Protokol yüklemesi 1 mL/kg, 1 saatte.`,
+   p: [{k: "d", l: `Doz`, o: PDOSE, def: 0.3}, {k: "r", l: `Yol`, o: ROUTE, def: "p"}],
+   c: (kg, p) => {
+     const prot = p.d === "prot"; const w = [];
+     let ml = prot ? kg : p.d * kg / 0.6;
+     if (ml > 40) { ml = 40; w.push(`K içeriği nedeniyle maks 40 mL (40 mEq K, 24 mmol P) ile sınırlandı.`); }
+     const P = kPlan(ml, p.r, prot ? 1 : 6); w.push(...P.w);
+     if (prot) w.push(`Protokol dozu 1 saatte 0,6 mmol/kg P ve 1 mEq/kg K veriyor. ${PROT_P_WARN}`);
+     if (p.r === "p" && P.tot / kg > 10) w.push(`Periferik sulandırma ${fx(P.tot / kg, 0)} mL/kg sıvı getiriyor; santral yol düşün.`);
+     const mm = ml * 0.6;
+     const L = [`KPO4 ${vol(ml)} mL (${fx(mm, 1)} mmol P, ${meq(ml)} mEq K) + ${vol(P.sf)} mL SF, toplam ${vol(P.tot)} mL, ${P.h} saatte IV infüzyon`, `Ca içeren mayi ve ilaçlarla aynı yoldan verilmeyecek`];
+     if (p.r === "s") L.push(`Santral venöz kateterden verilecek`);
+     if (P.rate > 5) L.push(`Kalp monitörü eşliğinde verilecek`);
+     return {big: `${vol(ml)} mL KPO4`, sub: `${fx(mm, 1)} mmol P · ${meq(ml)} mEq K · ${P.h} saatte`, w, L,
+       I: [`İçerdiği K günlük toplam K hesabına dahil edilmeli`]};
+   }},
+  {id: "p-id", t: `KPO4 idame`,
+   h: `Protokol: 1 mL/kg/gün KPO4, 5 katına sulandırılarak 24 saatte.`,
+   p: [{k: "r", l: `Yol`, o: [{v: "p", t: `Periferik (≤60 mEq/L)`}, {v: "s", t: `Santral (protokol: 5 kat)`}], def: "p"}],
+   c: (kg, p) => {
+     const ml = kg;
+     let tot = p.r === "s" ? ml * 5 : ml / 0.06;
+     tot = tot > 20 ? Math.ceil(tot / 5) * 5 : Math.ceil(tot * 10) / 10;
+     const L = [`KPO4 ${vol(ml)} mL + ${vol(tot - ml)} mL SF, toplam ${vol(tot)} mL, 24 saatte IV infüzyon`, `Ca içeren mayi ve ilaçlarla aynı yoldan verilmeyecek`];
+     if (p.r === "s") L.push(`Santral venöz kateterden verilecek`);
+     return {big: `${vol(ml)} mL/gün`, sub: `${fx(ml * 0.6, 1)} mmol P · ${meq(ml)} mEq K · 24 saatte`, w: [], L,
+       I: [`İçerdiği K günlük toplam K hesabına dahil edilmeli`,
+           p.r === "s" ? `Protokoldeki 5 kat sulandırma ≈200 mEq/L K demek; periferik sınırın 3 katı` : `Protokoldeki 5 kat sulandırma ≈200 mEq/L K verir; periferik yol için 60 mEq/L'ye sulandırıldı`]};
+   }},
+  {id: "p-gly", t: `Glycophos`,
+   h: `Glycophos: 1 mL = 1 mmol P + 2 mEq Na. Protokol yüklemesi 1 mL/kg, 1 saatte; idame TPN içinde.`,
+   p: [{k: "d", l: `Doz`, o: PDOSE, def: 0.3}],
+   c: (kg, p) => {
+     const prot = p.d === "prot";
+     const ml = prot ? kg : p.d * kg; const h = prot ? 1 : 6;
+     const w = prot ? [`Protokol dozu 1 saatte 1 mmol/kg P veriyor. ${PROT_P_WARN}`] : [];
+     return {big: `${vol(ml)} mL`, sub: `${fx(ml, 1)} mmol P · ${h} saatte`, w,
+       L: [`Glycophos ${vol(ml)} mL (${fx(ml, 1)} mmol P) + ${vol(ml * 9)} mL %5 dekstroz, ${h} saatte IV infüzyon`, `Ca içeren mayi ve ilaçlarla aynı yoldan verilmeyecek`],
+       I: [`İçerdiği Na ${meq(ml * 2)} mEq`, `1:10 sulandırıldı`]};
+   }},
+  {id: "p-notr", t: `Oral nötr fosfat`,
+   h: `Oral nötr fosfat solüsyonu: 1 mL = 20,8 mg fosfat. 1-2 mL/kg/gün, 6 saatte bir.`,
+   p: [{k: "d", l: `Doz`, u: `mL/kg/gün`, o: [1, 1.5, 2], def: 1}],
+   c: (kg, p) => {
+     const ml = p.d * kg / 4;
+     return {big: `${vol(ml)} mL`, sub: `doz başına · 6 saatte bir`, w: [],
+       L: [`Oral nötr fosfat solüsyonu ${vol(ml)} mL PO, ${FQ[4]}`],
+       I: [`Doz başına ${mg(ml * 20.8)} mg fosfat`, `İshal yapabilir`]};
+   }},
+  {id: "p-jou", t: `Joulie`,
+   h: `Joulie solüsyonu: 1 mL ≈ 30 mg P. 2 mL/kg/gün, 3-4 dozda.`,
+   p: [{k: "n", l: `Sıklık`, o: [{v: 3, t: `3x`}, {v: 4, t: `4x`}], def: 4}],
+   c: (kg, p) => {
+     const ml = 2 * kg / p.n;
+     return {big: `${vol(ml)} mL`, sub: `doz başına · ${FQS[p.n]}`, w: [],
+       L: [`Joulie solüsyonu ${vol(ml)} mL PO, ${FQ[p.n]}`],
+       I: [`Doz başına ≈ ${mg(ml * 30)} mg P`]};
+   }}
+ ]},
+
+ {id: "na", t: `Sodyum`, m: [
+  {id: "na-def", t: `Na defisiti (8 saat)`,
+   h: `Hacettepe: defisit = kg × 0,6 × hedef artış. 8 saatlik idamenin Na'sı ile birlikte %3 NaCl olarak, kalan hacim %5 dekstroz. 4. saatte Na kontrolü.`,
+   p: [{k: "d", l: `Hedef artış`, u: `mEq/L`, o: [4, 6, 8, 10], def: 6, custom: true},
+       {k: "i", l: `İdame`, o: IDAME, def: "m2"}],
+   c: (kg, p, boy) => {
+     const s = bsa(kg, boy);
+     const v8 = (p.i === "m2" ? 1500 * s.v : 150 * kg) / 3;
+     const ni = v8 * 0.05, df = kg * 0.6 * p.d, tn = ni + df, n3 = tn * 2;
+     let d5 = v8 - n3; const w = [];
+     if (d5 < 0) { d5 = 0; w.push(`%3 NaCl hacmi 8 saatlik idame hacmini aşıyor; mayi yalnız %3 NaCl olarak yazıldı, hacmi kontrol et.`); }
+     if (p.d > 10) w.push(`Kronik hiponatremide 24 saatlik artış 8-10 mEq/L'yi geçmemeli.`);
+     return {big: `${vol(n3)} mL %3 NaCl`, sub: `${meq(tn)} mEq Na · 8 saatte`, w,
+       L: [d5 > 0 ? `${vol(n3)} mL %3 NaCl + ${vol(d5)} mL %5 dekstroz, 8 saatte IV infüzyon` : `${vol(n3)} mL %3 NaCl, 8 saatte IV infüzyon`, `4. saatte kan Na kontrolü`],
+       I: [`Defisit ${fx(kg, 1)} × 0,6 × ${fx(p.d, 1)} = ${meq(df)} mEq + 8 saatlik idame Na ${meq(ni)} mEq = ${meq(tn)} mEq`,
+           `8 saatlik idame hacmi ${fx(v8, 0)} mL` + (p.i === "m2" ? `, ${bsaTxt(s)}` : ``),
+           `Mayi 8 saatlik idameyi de içerir; bu sürede ayrıca idame verilmez`,
+           `Kronik hiponatremide 24 saatlik artış 8-10 mEq/L'yi geçmemeli`]};
+   }},
+  {id: "na-ode", t: `Beyin ödemi`,
+   h: `%3 NaCl 4 mL/kg/doz, günde 4 kez, 30 dakikada (status/KİBAS'ta 4-6 mL/kg).`,
+   p: [{k: "d", l: `Doz`, u: `mL/kg/doz`, o: [4, 5, 6], def: 4}],
+   c: (kg, p) => {
+     const ml = p.d * kg;
+     return {big: `${vol(ml)} mL`, sub: `%3 NaCl · doz başına · 6 saatte bir`, w: [],
+       L: [`%3 NaCl ${vol(ml)} mL, 30 dakikada IV infüzyon, ${FQ[4]}`],
+       I: [`Doz başına ${meq(ml * 0.5)} mEq Na`]};
+   }}
+ ]},
+
+ {id: "hco3", t: `Bikarbonat`, m: [
+  {id: "hco-bol", t: `Bolus`,
+   h: `NaHCO3 (%8,4): 1 mL = 1 mEq. Hiperkalemi ya da ağır asidozda 1-2 mL/kg, 10 dakikada.`,
+   p: [{k: "d", l: `Doz`, u: `mL/kg`, o: [1, 2], def: 1}],
+   c: (kg, p) => {
+     let ml = p.d * kg; const w = [];
+     if (ml > 50) { ml = 50; w.push(`Doz başına maks 50 mEq ile sınırlandı.`); }
+     return {big: `${vol(ml)} mL`, sub: `${meq(ml)} mEq HCO3 · 10 dakikada`, w,
+       L: [`NaHCO3 ${vol(ml)} mL + ${vol(ml)} mL %5 dekstroz, 10 dakikada IV`, `Ca içeren ilaçlarla aynı yoldan verilmeyecek`],
+       I: [`%8,4 NaHCO3 1:1 sulandırıldı (%4,2)`]};
+   }},
+  {id: "hco-def", t: `Defisit (8 saat)`,
+   h: `Defisit = kg × hedef artış × 0,5, 8 saatte. 8 saatlik idame mayisinin içinde verilir; NaHCO3'ten gelen Na idame Na'sından düşülür.`,
+   p: [{k: "d", l: `Hedef artış`, u: `mEq/L HCO3`, o: [4, 6, 8, 10], def: 6, custom: true},
+       {k: "i", l: `İdame`, o: IDAME, def: "m2"}],
+   c: (kg, p, boy) => {
+     const s = bsa(kg, boy);
+     const v8 = (p.i === "m2" ? 1500 * s.v : 150 * kg) / 3;
+     const ni = v8 * 0.05, df = kg * p.d * 0.5, rest = ni - df;
+     const n3 = rest > 0 ? rest * 2 : 0;
+     let d5 = v8 - df - n3; const w = [];
+     if (d5 < 0) { d5 = 0; w.push(`NaHCO3 ve %3 NaCl hacmi 8 saatlik idame hacmini aşıyor; hacmi kontrol et.`); }
+     const parts = [`${vol(df)} mL NaHCO3`];
+     if (n3 > 0) parts.push(`${vol(n3)} mL %3 NaCl`);
+     if (d5 > 0) parts.push(`${vol(d5)} mL %5 dekstroz`);
+     return {big: `${vol(df)} mL NaHCO3`, sub: `${meq(df)} mEq HCO3 · 8 saatte`, w,
+       L: [`${parts.join(" + ")}, 8 saatte IV infüzyon`, `Ca içeren ilaçlarla aynı yoldan verilmeyecek`],
+       I: [`Defisit ${fx(kg, 1)} × ${fx(p.d, 1)} × 0,5 = ${meq(df)} mEq`,
+           rest > 0 ? `8 saatlik idame Na ${meq(ni)} mEq; ${meq(df)} mEq NaHCO3'ten geliyor, kalan ${meq(rest)} mEq %3 NaCl ile` : `NaHCO3'ten gelen ${meq(df)} mEq Na, 8 saatlik idame Na ihtiyacını (${meq(ni)} mEq) karşılıyor; kalan hacim %5 dekstroz`,
+           `8 saatlik idame hacmi ${fx(v8, 0)} mL` + (p.i === "m2" ? `, ${bsaTxt(s)}` : ``),
+           `Mayi 8 saatlik idameyi de içerir`]};
+   }}
+ ]},
+
+ {id: "hk", t: `Hiperkalemi`, m: [
+  {id: "hk", t: `Hiperkalemi`,
+   h: `Protokol: çocukta K>5,5, yenidoğanda K>6 mmol/L. EKG değişikliği varsa önce Ca glukonat (membran), sonra hücre içine alan tedaviler, en son atılım.`,
+   p: [{k: "e", l: `EKG`, o: [{v: "a", t: `EKG değişikliği var`}, {v: "n", t: `EKG normal`}], def: "a"},
+       {k: "x", l: `Dekstroz`, o: [{v: 5, t: `%5 (protokol)`}, {v: 10, t: `%10`}, {v: 20, t: `%20`}], def: 5, show: v => v.e === "a"}],
+   c: (kg, p) => {
+     const L = [`Mayi ve diyetteki potasyum kesilecek`];
+     const ab = p.e === "a"; const ca = Math.min(kg, 30); const ky = Math.min(kg, 15);
+     if (ab) {
+       L.push(`%10 Ca glukonat ${vol(ca)} mL + ${vol(ca)} mL SF, 10 dakikada IV, kalp monitörü eşliğinde`);
+       L.push(`Salbutamol ${kg < 25 ? "2,5" : "5"} mg nebül, 10 dakikada; gerekirse 2 saatte bir tekrar`);
+       const ins = Math.min(0.1 * kg, 10), g = Math.min(0.5 * kg, 25);
+       L.push(`Kristalize insülin ${fx(ins, 2)} Ü + ${vol(g * 100 / p.x)} mL %${p.x} dekstroz, 30 dakikada IV infüzyon`);
+       L.push(`Kan şekeri takibi yapılacak`);
+       const b = Math.min(kg, 50);
+       L.push(`NaHCO3 ${vol(b)} mL + ${vol(b)} mL %5 dekstroz, 10 dakikada IV`);
+       L.push(`Ca glukonat ve NaHCO3 aynı yoldan verilmeyecek`);
+     }
+     L.push(`Kayeksalat (Anti-Potasyum) ${fx(ky, 1)} g PO veya rektal, 6 saatte bir`);
+     if (ab) L.push(`Furosemid ${mg(Math.min(kg, 40))} mg IV`);
+     return {big: ab ? `${vol(ca)} mL Ca glukonat` : `${fx(ky, 1)} g Kayeksalat`, sub: ab ? `ilk basamak · 10 dakikada` : `EKG normal · bağlayıcı`, w: [], L,
+       I: [`Ca glukonat 1 mL/kg (maks 30 mL) · insülin 0,1 Ü/kg + glukoz 0,5 g/kg · NaHCO3 1 mL/kg · Kayeksalat 1 g/kg (maks 15 g) · furosemid 1 mg/kg (maks 40 mg)`,
+           `Salbutamol 25 kg altında 2,5 mg, üstünde 5 mg`]};
+   }}
+ ]}
+];
+
+/* ================= PİYASA FORMLARI (TİTCK KÜB/KT ile doğrulandı) ================= */
+/* s: süspansiyon mg/mL · t: tablet/kapsül mg · h: eşit yarıma bölünebilir · u: birim adı */
+const FORMS = {
+ amox: [
+  {n: `Largopen 250 mg/5 mL süspansiyon`, s: 50},
+  {n: `Largopen 500 mg tablet (çentikli)`, t: 500, h: true},
+  {n: `Largopen 1 g tablet`, t: 1000},
+  {n: `Largopen 250 mg kapsül`, t: 250, u: `kapsül`},
+  {n: `Largopen 500 mg kapsül`, t: 500, u: `kapsül`}],
+ amkl: [
+  {n: `Augmentin BID 400/57 mg/5 mL forte süspansiyon`, s: 80},
+  {n: `Augmentin ES 600/42,9 mg/5 mL süspansiyon`, s: 120},
+  {n: `Augmentin BID 200/28 mg/5 mL süspansiyon`, s: 40},
+  {n: `Augmentin BID 625 mg tablet (500 mg amoksisilin)`, t: 500},
+  {n: `Augmentin BID 1000 mg tablet (875 mg amoksisilin)`, t: 875}],
+ azit: [
+  {n: `Azitromisin 200 mg/5 mL süspansiyon`, s: 40},
+  {n: `Azitromisin 500 mg tablet (çentikli, eşit yarım)`, t: 500, h: true}],
+ klar: [
+  {n: `Klaritromisin 125 mg/5 mL süspansiyon`, s: 25},
+  {n: `Klaritromisin 250 mg/5 mL süspansiyon`, s: 50},
+  {n: `Klaritromisin 250 mg tablet`, t: 250},
+  {n: `Klacid 500 mg tablet`, t: 500}],
+ klin: [
+  {n: `Cleocin pediatrik 75 mg/5 mL süspansiyon`, s: 15},
+  {n: `Klindamisin 150 mg kapsül`, t: 150, u: `kapsül`}],
+ metr: [
+  {n: `Flagyl 125 mg/5 mL süspansiyon`, s: 25},
+  {n: `Flagyl 500 mg tablet`, t: 500}],
+ nitr: [
+  {n: `Piyeloseptyl 25 mg/5 mL süspansiyon`, s: 5},
+  {n: `Piyeloseptyl 50 mg kapsül`, t: 50, u: `kapsül`},
+  {n: `Piyeloseptyl 100 mg tablet (çentikli)`, t: 100, h: true}],
+ orni: [
+  {n: `Biteral 500 mg tablet (çentiksiz)`, t: 500}],
+ sfks: [
+  {n: `Suprax 100 mg/5 mL süspansiyon`, s: 20},
+  {n: `Suprax 400 mg tablet`, t: 400}],
+ sfrk: [
+  {n: `Sefuroksim 125 mg/5 mL süspansiyon (Cefaks)`, s: 25},
+  {n: `Sefuroksim 250 mg/5 mL süspansiyon (Cefaks)`, s: 50},
+  {n: `Sefuroksim 250 mg tablet (kırılmaz)`, t: 250},
+  {n: `Sefuroksim 500 mg tablet (kırılmaz)`, t: 500}],
+ sipr: [
+  {n: `Siprofloksasin 250 mg tablet`, t: 250},
+  {n: `Siprofloksasin 500 mg tablet (çentikli markalar)`, t: 500, h: true},
+  {n: `Siprofloksasin 750 mg tablet`, t: 750}],
+ line: [
+  {n: `Zyvoxid 100 mg/5 mL süspansiyon`, s: 20},
+  {n: `Linezolid 600 mg tablet`, t: 600}],
+ tmp: [
+  {n: `Bactrim 200/40 mg/5 mL süspansiyon`, s: 8},
+  {n: `Bactrim 400/80 mg tablet (yarım doza bölünmez)`, t: 80},
+  {n: `Bactrim Forte 800/160 mg tablet`, t: 160}],
+ asik: [
+  {n: `Asiklovir 200 mg/5 mL süspansiyon (Zovirax, Aklovir)`, s: 40},
+  {n: `Zovirax Forte 400 mg/5 mL süspansiyon`, s: 80},
+  {n: `Asiklovir 200 mg tablet`, t: 200},
+  {n: `Asiklovir 400 mg tablet`, t: 400},
+  {n: `Asiklovir 800 mg tablet`, t: 800}],
+ fluk: [
+  {n: `Triflucan 5 mg/mL şurup`, s: 5},
+  {n: `Flukonazol 50 mg kapsül`, t: 50, u: `kapsül`},
+  {n: `Flukonazol 100 mg kapsül`, t: 100, u: `kapsül`},
+  {n: `Flukonazol 150 mg kapsül`, t: 150, u: `kapsül`}],
+ itra: [
+  {n: `Sporanox 10 mg/mL oral çözelti`, s: 10},
+  {n: `İtrakonazol 100 mg kapsül`, t: 100, u: `kapsül`}],
+ osel: [
+  {n: `Oseltamivir 12 mg/mL süspansiyon (Enfluvir, Oselmir)`, s: 12},
+  {n: `Oseltamivir 30 mg kapsül`, t: 30, u: `kapsül`},
+  {n: `Oseltamivir 45 mg kapsül`, t: 45, u: `kapsül`},
+  {n: `Oseltamivir 75 mg kapsül`, t: 75, u: `kapsül`}]
+};
+
+function tabTxt(n) {
+  const w = Math.floor(n + 1e-9), half = n - w > 0.25;
+  if (w === 0) return `1/2`;
+  return half ? `${w} 1/2` : `${w}`;
+}
+function formAmt(f, dose) {
+  if (f.s) {
+    const ml = dose / f.s, r = Math.round(ml * 2) / 2;
+    const ex = `${fx(ml, 1)} mL`;
+    if (r > 0 && Math.abs(r / ml - 1) <= 0.05 && Math.abs(r - ml) >= 0.05) return {txt: `${ex} (≈ ${fx(r, 1)} mL)`, core: `${fx(r, 1)} mL`, cls: ``};
+    return {txt: ex, core: ex, cls: ``};
+  }
+  const u = f.u || `tablet`, step = f.h ? 0.5 : 1;
+  const n = Math.round(dose / f.t / step) * step;
+  if (n <= 0) return {txt: `uygun değil (doz çok küçük)`, core: ``, cls: `no`};
+  const pct = Math.round(n * f.t / dose * 100), core = `${tabTxt(n)} ${u}`;
+  if (Math.abs(pct - 100) <= 10) return {txt: core, core, cls: ``};
+  if (Math.abs(pct - 100) <= 20) return {txt: `${core} (hedefe göre %${pct})`, core, cls: `mid`};
+  return {txt: `uygun değil (en yakın ${core}, hedefe göre %${pct})`, core, cls: `no`};
+}
+function formRows(key, dose, fqt) {
+  return (FORMS[key] || []).map(f => {
+    const a = formAmt(f, dose);
+    return {n: f.n, txt: a.txt, core: a.core, cls: a.cls, copy: a.cls === `no` ? `` : `${f.n}: ${a.core}, ${fqt}`};
+  });
+}
+const worst = (a, b) => (a === `no` || b === `no` ? `no` : a === `mid` || b === `mid` ? `mid` : ``);
+
+/* ================= ANTİBİYOTİKLER (protokol) ================= */
+const UNIT = {day: `mg/kg/gün`, dose: `mg/kg/doz`, fixed: `mg/doz`, m2day: `mg/m²/gün`, m2dose: `mg/m²/doz`};
+const INF12 = `1-2 saatte infüzyon`;
+const daily = n => (n === 1 ? `günde 1 kez` : FQ[n]);
+const AB = [
+ {id: "amik", n: `Amikasin`, b: `Amikaver, Amikozit`, r: [
+   {t: `Standart`, route: `IV`, u: "day", v: 15, n: [1]},
+   {t: `Endokardit / bakteriyemi`, route: `IV`, u: "day", v: 15, n: [3]}]},
+ {id: "amok", n: `Amoksisilin`, b: `Largopen`, fk: "amox", r: [
+   {t: `3 aydan büyük`, route: `PO`, u: "day", v: 50, n: [3], maxDose: 500}]},
+ {id: "amkl", n: `Amoksisilin/klavulanat`, ul: `mg (amoksisilin)`, b: `Augmentin, Amoklavin, Croxilex, Klamoks`, fk: "amkl", r: [
+   {t: `3 aydan büyük`, route: `PO`, u: "day", v: 80, n: [2], maxDose: 1000, ul: `mg amoksisilin/kg/gün`,
+    note: `80 mg/kg/günde BID 400/57 ile klavulanat 11,4 mg/kg/gün olur, ES 600/42,9 ile 5,7. KÜB: 7:1 formlarda 2 yaş altında 45/6,4 mg/kg/gün üstü için veri yok; yüksek dozda ES tercih edilir.`}]},
+ {id: "amsu", n: `Ampisilin/sulbaktam`, b: `Alfasid, Sultasid, Sulcid, Sultamat`, r: [
+   {t: `Hafif-orta`, route: `IV`, u: "day", v: 100, n: [4], maxDose: 2000, ul: `mg ampisilin/kg/gün`, combo: {f: 1.5, lab: `ampisilin`}},
+   {t: `Menenjit`, route: `IV`, u: "day", v: 200, n: [4], maxDose: 2000, ul: `mg ampisilin/kg/gün`, combo: {f: 1.5, lab: `ampisilin`}}],
+  foot: `Doz ampisilin üzerinden; toplam doz = ampisilin × 1,5 (1,5 g flakon = 1 g ampisilin + 0,5 g sulbaktam)`},
+ {id: "asik", n: `Asiklovir`, b: `Aklovir, Asiviral, Zovirax`, fk: "asik", r: [
+   {t: `HSV mukokutanöz PO`, route: `PO`, u: "day", v: 80, n: [4], maxDose: 800},
+   {t: `HSV mukokutanöz IV`, route: `IV`, u: "day", v: 15, n: [3], inf: INF12},
+   {t: `HSV ensefalit, 21 gün-4 ay`, route: `IV`, u: "day", v: 60, n: [3], inf: INF12},
+   {t: `HSV ensefalit, 4 aydan büyük`, route: `IV`, u: "day", v: 45, n: [3], inf: INF12},
+   {t: `Varisella PO`, route: `PO`, u: "day", v: 80, n: [4], maxDose: 800},
+   {t: `Varisella IV`, route: `IV`, u: "dose", v: 10, n: [3], inf: INF12},
+   {t: `Dissemine / SSS (kg)`, route: `IV`, u: "dose", v: [15, 20], n: [3], inf: INF12},
+   {t: `Dissemine / SSS (m²)`, route: `IV`, u: "m2day", v: 1500, n: [3], inf: INF12}],
+  foot: `IV tedavide 2000 mL/m²/gün hidrasyon (kristal nefropati genellikle 12-48. saatte)`},
+ {id: "azit", n: `Azitromisin`, b: `Azitro, Azomax, Zitromax, Zitrotek`, p: [],
+  c: (kg) => {
+    const d1 = Math.min(10 * kg, 500), d2 = Math.min(5 * kg, 250); const w = [];
+    if (10 * kg > 500 || 5 * kg > 250) w.push(`Erişkin dozu (500 mg, sonra 250 mg) ile sınırlandı.`);
+    const f1 = formRows("azit", d1, ``), f2 = formRows("azit", d2, ``);
+    const F = FORMS.azit.map((f, i) => {
+      const cls = worst(f1[i].cls, f2[i].cls);
+      const txt = f1[i].cls === `no` && f2[i].cls === `no` ? `uygun değil (doz çok küçük)` : `1. gün ${f1[i].txt}; sonra ${f2[i].txt}`;
+      return {n: f.n, txt, cls,
+        copy: cls === `no` ? `` : `${f.n}: 1. gün ${f1[i].core}, 2-5. günler günde 1 kez ${f2[i].core}`};
+    });
+    return {big: `${mg(d1)} mg`, sub: `1. gün · sonra ${mg(d2)} mg/gün, 4 gün`, w,
+      L: [`Azitromisin ${mg(d1)} mg PO, 1. gün tek doz`, `Sonra azitromisin ${mg(d2)} mg PO, günde 1 kez, 2-5. günler`],
+      I: [`Protokol: 1. gün 10 mg/kg, 2-5. gün 5 mg/kg`, `5 günlük toplam ${mg(d1 + 4 * d2)} mg (protokol maks 2000 mg)`], F};
+  }},
+ {id: "fluk", n: `Flukonazol`, b: `Flucan, Flukopol, Triflucan, Zolax`, fk: "fluk", r: [
+   {t: `Genel, başlangıç`, route: `IV/PO`, u: "day", v: [6, 12], n: [1], maxDose: 800, note: `Protokol maks 400-800 mg/doz; üst sınır 800 alındı`},
+   {t: `Genel, idame`, route: `IV/PO`, u: "day", v: [3, 6, 12], n: [1], maxDose: 800, note: `Protokol maks 400-800 mg/doz; üst sınır 800 alındı`},
+   {t: `Onkoloji profilaksisi`, route: `IV/PO`, u: "day", v: [6, 12], n: [1], maxDose: 400},
+   {t: `Sistemik / SSS / endoftalmit`, route: `IV`, u: "day", v: 12, n: [1], maxDose: 800},
+   {t: `Orofaringeal (HIV-) başlangıç`, route: `PO/IV`, u: "day", v: 6, n: [1], maxDose: 200},
+   {t: `Orofaringeal (HIV-) idame`, route: `PO/IV`, u: "day", v: [3, 6], n: [1], maxDose: 200},
+   {t: `Özefageal (HIV-)`, route: `PO/IV`, u: "day", v: 6, n: [1], maxDose: 200}]},
+ {id: "kasp", n: `Kaspofungin`, b: `Cancidas · 3 aydan büyük`,
+  p: [{k: "m", l: `İdame`, o: [{v: 50, t: `50 mg/m²`}, {v: 70, t: `70 mg/m² (ağır)`}], def: 50}],
+  c: (kg, p, boy) => {
+    const s = bsa(kg, boy); const ld = Math.min(70 * s.v, 70), md = Math.min(p.m * s.v, 70); const w = [];
+    if (70 * s.v > 70 || p.m * s.v > 70) w.push(`Maks 70 mg/gün uygulandı.`);
+    return {big: `${mg(ld)} mg`, sub: `1. gün yükleme · sonra ${mg(md)} mg/gün`, w,
+      L: [`Kaspofungin ${mg(ld)} mg IV, 1 saatte infüzyon, 1. gün`, `Sonra kaspofungin ${mg(md)} mg IV, 1 saatte infüzyon, günde 1 kez`],
+      I: [bsaTxt(s), `Protokol: yükleme 70 mg/m², idame 50 mg/m² (gerekirse 70), maks 70 mg/gün`]};
+  }},
+ {id: "klar", n: `Klaritromisin`, b: `Klacid, Macrol`, fk: "klar", r: [
+   {t: `Standart`, route: `PO`, u: "day", v: 15, n: [2], maxDay: 1000}]},
+ {id: "klin", n: `Klindamisin`, b: `Cleocin, Klindan, Klindaver · 1 aydan büyük`, fk: "klin", r: [
+   {t: `Basit-orta PO`, route: `PO`, u: "day", v: [10, 20, 25], n: [3], maxDose: 300, note: `Protokolde "10-25 mg/kg 3x" yazıyor; günlük doz olarak alındı`},
+   {t: `Basit-orta IV`, route: `IV`, u: "day", v: 20, n: [3, 4], maxDay: 1800},
+   {t: `Ciddi IV`, route: `IV`, u: "day", v: 40, n: [3, 4], maxDay: 2700},
+   {t: `Osteomiyelit / septik artrit / MRSA`, route: `IV`, u: "day", v: 40, n: [3], maxDay: 2700}]},
+ {id: "line", n: `Linezolid`, b: `Nodizil, Lynozid, Zyvoxid`, fk: "line", r: [
+   {t: `12 yaştan küçük`, route: `IV/PO`, u: "dose", v: 10, n: [3], maxDose: 600},
+   {t: `12 yaş ve üstü`, route: `IV/PO`, u: "fixed", v: 600, n: [2]}]},
+ {id: "lamb", n: `Lipozomal amfoterisin B`, b: `AmBisome`, r: [
+   {t: `Genel`, route: `IV`, u: "day", v: 3, n: [1], inf: `2 saatte infüzyon`},
+   {t: `Ciddi / menenjit`, route: `IV`, u: "day", v: 5, n: [1], inf: `2 saatte infüzyon`}],
+  foot: `Tedavi boyunca K takibi`},
+ {id: "mero", n: `Meropenem`, b: `Meronem, Mopem`, r: [
+   {t: `Genel / NPA`, route: `IV`, u: "dose", v: 20, n: [3], maxDose: 1000},
+   {t: `Menenjit / KF alevlenmesi`, route: `IV`, u: "dose", v: 40, n: [3], maxDose: 2000}]},
+ {id: "metr", n: `Metronidazol`, b: `Flagyl`, fk: "metr", r: [
+   {t: `IV`, route: `IV`, u: "day", v: [22.5, 30, 40], n: [3], maxDay: 4000},
+   {t: `PO`, route: `PO`, u: "day", v: [30, 40, 50], n: [3], maxDay: 2250}]},
+ {id: "nitr", n: `Nitrofurantoin`, b: `Piyeloseptyl, Uriseptin`, fk: "nitr", r: [
+   {t: `Tedavi`, route: `PO`, u: "day", v: [5, 6, 7], n: [4], maxDose: 100},
+   {t: `İYE profilaksisi`, route: `PO`, u: "day", v: [1, 2], n: [1], ft: `günde 1 kez, yatmadan önce`}]},
+ {id: "orni", n: `Ornidazol`, b: `Biteral · Hacettepe uygulaması`, fk: "orni", r: [
+   {t: `Standart`, route: `IV/PO`, u: "day", v: 30, n: [3], maxDose: 500, note: `Maks doz protokolde yok; erişkin tek dozu 500 mg ile sınırlandı. Oral süspansiyonu yok.`}]},
+ {id: "osel", n: `Oseltamivir`, b: `Enfluvir, Oselmir 12 mg/mL süspansiyon · 30, 45, 75 mg kapsül`,
+  p: [{k: "a", l: `Yaş`, o: [{v: "pre", t: `Preterm YD`}, {v: "yd", t: `Term YD, 14 günden küçük`}, {v: "inf", t: `14 gün-1 yaş`}, {v: "c", t: `1 yaş ve üstü`}], def: "c"}],
+  c: (kg, p) => {
+    let d, n; const w = [];
+    if (p.a === "pre") { d = kg; n = 2; }
+    else if (p.a === "yd") { d = 3 * kg; n = 1; }
+    else if (p.a === "inf") { d = 3 * kg; n = 2; }
+    else { d = kg <= 15 ? 30 : kg <= 23 ? 45 : kg <= 40 ? 60 : 75; n = 2;
+      w.push(`Protokolün antiviral bölümünde 1 yaş üstü dozlar "1x" yazıyor; tedavi 2x'tir (protokolün diğer oseltamivir tablosu da 2x). Burada 2x kullanıldı.`); }
+    const ml = d / 12, fqt = `${FQ[n]}, 5 gün`;
+    const I = [p.a === "c" ? `Kilo bantları: 15 kg ve altı 30 mg, 15-23 kg 45 mg, 23-40 kg 60 mg, 40 kg üstü 75 mg` : `Protokol: ${p.a === "pre" ? "1 mg/kg/doz 2x" : p.a === "yd" ? "3 mg/kg/doz 1x" : "3 mg/kg/doz 2x"}`];
+    if (p.a !== "c") I.push(`Enfluvir KÜB 1 yaş altında: 3-12 ay 3 mg/kg, 1-3 ay 2,5 mg/kg, 1 aydan küçük 2 mg/kg, günde 2 kez`);
+    I.push(`GFR<30 ise doz ayarı gerekir`);
+    return {big: `${mg(d)} mg`, sub: `${vol(ml)} mL süspansiyon · ${FQS[n]} · 5 gün`, w,
+      L: [`Oseltamivir ${mg(d)} mg (${vol(ml)} mL) PO, ${fqt}`], I, F: formRows("osel", d, fqt)};
+  }},
+ {id: "pipt", n: `Piperasilin/tazobaktam`, b: `Tazocin · 2 aydan büyük`, r: [
+   {t: `Standart`, route: `IV`, u: "dose", v: 100, n: [3], maxDose: 4000, maxDay: 16000, ul: `mg piperasilin/kg/doz`, combo: {f: 1.125, lab: `piperasilin`}, note: `Protokolde doz başına sınır yok; erişkin tek dozu 4 g piperasilin (4,5 g flakon) ile sınırlandı`}],
+  foot: `Protokol: doz piperasiline göre; order toplam doz (piperasilin × 9/8) olarak yazılır`},
+ {id: "sfzl", n: `Sefazolin`, b: `Cefozin`, r: [
+   {t: `Genel`, route: `IV`, u: "day", v: [25, 50, 75], n: [3], maxDay: 6000},
+   {t: `Kemik / eklem`, route: `IV`, u: "day", v: [100, 150], n: [3, 4], maxDay: 12000}]},
+ {id: "sfpm", n: `Sefepim`, b: `Ekipim`, r: [
+   {t: `Hafif-orta`, route: `IV`, u: "dose", v: 50, n: [2], maxDose: 2000},
+   {t: `Ciddi / NPA / KF / menenjit`, route: `IV`, u: "dose", v: 50, n: [3], maxDose: 2000}]},
+ {id: "sfks", n: `Sefiksim`, b: `Suprax, Zimaks`, fk: "sfks", r: [
+   {t: `Standart`, route: `PO`, u: "day", v: 8, n: [1, 2], maxDay: 400, ft: daily}]},
+ {id: "sfot", n: `Sefotaksim`, b: `Betaksim, Sefotak, Taxocef`, r: [
+   {t: `Genel`, route: `IV`, u: "day", v: [150, 180], n: [3], maxDay: 8000},
+   {t: `Menenjit`, route: `IV`, u: "day", v: [225, 300], n: [3, 4], maxDay: 12000}]},
+ {id: "sftr", n: `Seftriakson`, b: `İesef, Cefaday, Novosef`, r: [
+   {t: `Hafif-orta`, route: `IV`, u: "day", v: [50, 75], n: [1], maxDay: 1000},
+   {t: `Ciddi / menenjit`, route: `IV`, u: "day", v: 100, n: [2], maxDay: 4000}]},
+ {id: "sfrk", n: `Sefuroksim`, b: `Aksef, Cefaks, Zinnat`, fk: "sfrk", r: [
+   {t: `Hafif-orta IV`, route: `IV`, u: "day", v: [50, 75], n: [3], maxDose: 1500},
+   {t: `Ciddi / menenjit IV`, route: `IV`, u: "day", v: [100, 150, 200], n: [3], maxDose: 1500},
+   {t: `Hafif-orta PO`, route: `PO`, u: "day", v: [20, 30], n: [2], maxDose: 500, note: `Oral form yemekle alınır (emilim)`}]},
+ {id: "sipr", n: `Siprofloksasin`, b: `Cipro, Siprobel, Siflox`, fk: "sipr", r: [
+   {t: `IV`, route: `IV`, u: "dose", v: 10, n: [2], maxDose: 400},
+   {t: `Hafif-orta PO`, route: `PO`, u: "dose", v: 10, n: [2], maxDose: 500},
+   {t: `Ciddi PO`, route: `PO`, u: "dose", v: [15, 20], n: [2], maxDose: 750}],
+  foot: `Türkiye'de oral süspansiyonu bulunamadı; tablet formları var`},
+ {id: "teik", n: `Teikoplanin`, b: `Targocid`,
+  p: [{k: "s", l: `Şiddet`, o: [{v: "h", t: `Hafif-orta`}, {v: "c", t: `Ciddi`}], def: "h"}],
+  c: (kg, p) => {
+    const Ld = p.s === "c" ? [14, 14, 14] : [12, 10, 10];
+    const cap = x => Math.min(x * kg, 400);
+    const a = cap(Ld[0]), b = cap(Ld[1]), c = cap(Ld[2]), d = cap(10); const w = [];
+    if (Ld[0] * kg > 400 || 10 * kg > 400) w.push(`Maks 400 mg/doz uygulandı.`);
+    return {big: `${mg(a)} mg`, sub: `1. yükleme · idame ${mg(d)} mg/gün`, w,
+      L: [`Teikoplanin ${mg(a)} mg IV, 0. saat (1. yükleme)`, `Teikoplanin ${mg(b)} mg IV, 12. saat (2. yükleme)`, `Teikoplanin ${mg(c)} mg IV, 24. saat (3. yükleme)`, `Sonra teikoplanin ${mg(d)} mg IV, 24 saatte bir (36. saatten itibaren)`],
+      I: [`Protokol: yükleme ${Ld.join("-")} mg/kg (0, 12, 24. saat), idame 10 mg/kg 24 saatte bir, maks 400 mg/doz`]};
+  }},
+ {id: "tmps", n: `TMP-SMX`, ul: `mg TMP`, b: `Bactrim, Trimoks · dozlar trimetoprime göre · 2 aydan büyük`, fk: "tmp", r: [
+   {t: `Tedavi`, route: `PO`, u: "day", v: [6, 8, 10, 12], n: [2], maxDose: 160, ul: `mg TMP/kg/gün`},
+   {t: `PJP profilaksisi`, route: `PO`, u: "day", v: [5, 10], n: [2], maxDose: 160, ul: `mg TMP/kg/gün`, ft: `12 saatte bir (2x1), haftada 3 gün`, note: `Protokoldeki "maks 160 mg/kg/gün" yazım hatası; 160 mg/doz alındı`},
+   {t: `PJP profilaksisi (m²)`, route: `PO`, u: "m2day", v: 150, n: [2], maxDose: 160, ul: `mg TMP/m²/gün`, ft: `12 saatte bir (2x1), haftada 3 gün`},
+   {t: `PJP tedavisi`, route: `PO`, u: "day", v: [15, 20], n: [3], ul: `mg TMP/kg/gün`},
+   {t: `İYE profilaksisi`, route: `PO`, u: "dose", v: 2, n: [1], ul: `mg TMP/kg/doz`, ft: `günde 1 kez`}]},
+ {id: "vank", n: `Vankomisin`, b: `Vancotek, Vancomax`, r: [
+   {t: `Genel`, route: `IV`, u: "day", v: [40, 60], n: [4], maxDose: 500},
+   {t: `Ciddi / menenjit`, route: `IV`, u: "day", v: 60, n: [4], maxDose: 500}]}
+].sort((a, b) => a.n.localeCompare(b.n, "tr"));
+
+/* ================= PROFİLAKSİ (immünoloji listesi) ================= */
+const PR = [
+ {id: "p-tmp", n: `Bactrim (TMP-SMX)`, on: `TMP-SMX (Bactrim)`, ul: `mg TMP`, src: `Liste`, fk: "tmp",
+  b: `Dozlar trimetoprime göre: 400/80 tablette 80 mg TMP · İzlem: KCFT`, r: [
+   {t: `5 mg/kg/gün · haftada 3 gün`, route: `PO`, u: "day", v: 5, n: [2, 1], ul: `mg TMP/kg/gün`, maxDay: 320,
+    ft: n => (n === 2 ? `12 saatte bir (2x1), haftada 3 ardışık gün` : `günde 1 kez, haftada 3 ardışık gün`),
+    note: `Üst sınır 320 mg TMP/gün: erişkin dozu (1-2 forte, haftada 3 gün)`},
+   {t: `3 mg/kg/gün · her gün`, route: `PO`, u: "day", v: 3, n: [2, 1], ul: `mg TMP/kg/gün`, maxDay: 160,
+    ft: n => (n === 2 ? `12 saatte bir (2x1), her gün` : `günde 1 kez, her gün`),
+    note: `Üst sınır 160 mg TMP/gün: erişkin dozu (1/2-1 forte/gün)`}],
+  foot: `Liste: 1 veya 2 dozda verilebilir. İzlem: KCFT`},
+ {id: "p-itra", n: `İtrakonazol`, b: `Sporanox 10 mg/mL oral çözelti · Funit, İtraspor 100 mg kapsül`, p: [],
+  c: (kg) => {
+    const cap = kg < 50 ? 100 : 200, d = Math.min(5 * kg, cap); const w = [];
+    if (5 * kg > cap) w.push(`Listedeki sınır uygulandı: ${kg < 50 ? `50 kg altı 100 mg` : `50 kg ve üstü 200 mg`}.`);
+    return {big: `${mg(d)} mg`, sub: `günde 1 kez`, w,
+      L: [`İtrakonazol ${mg(d)} mg PO, günde 1 kez`],
+      I: [`Liste: 5 mg/kg/gün tek doz; 50 kg altı 100 mg, üstü 200 mg`, `Oral çözelti aç karnına, kapsül yemekle alınır; ikisi mg-mg birbirinin yerine geçmez (çözeltinin emilimi daha yüksek)`],
+      F: formRows("itra", d, `günde 1 kez`)};
+  }},
+ {id: "p-asik", n: `Asiklovir`, src: `Liste`, fk: "asik", b: `HSV ve CMV profilaksisi · İzlem: BFT`, r: [
+   {t: `HSV, 40 kg altı`, route: `PO`, u: "day", v: [60, 75, 90], n: [3, 2], maxDose: 800, kmax: 40},
+   {t: `HSV, 40 kg ve üstü`, route: `PO`, u: "fixed", v: [400, 800], n: [2], kmin: 40},
+   {t: `CMV, 40 kg altı`, route: `PO`, u: "m2dose", v: 600, n: [4], maxDose: 800, kmax: 40, note: `Maks 800 mg/doz listede yok; literatür sınırı`},
+   {t: `CMV, 40 kg ve üstü`, route: `PO`, u: "fixed", v: 800, n: [4], kmin: 40, note: `Listede erişkin için 2×800 mg da yazıyor`}],
+  foot: `İzlem: BFT; yeterli hidrasyon`},
+ {id: "p-azit", n: `Azitromisin`, src: `Liste`, fk: "azit", b: `Profilaksi`, r: [
+   {t: `5 mg/kg · haftada 3 gün`, route: `PO`, u: "dose", v: 5, n: [1], ft: `günde 1 kez, haftada 3 gün`},
+   {t: `10 mg/kg · haftada 1 gün`, route: `PO`, u: "dose", v: 10, n: [1], ft: `haftada 1 kez`}]},
+ {id: "p-klar", n: `Klaritromisin`, src: `Liste`, fk: "klar", b: `Profilaksi`, r: [
+   {t: `7,5 mg/kg/gün`, route: `PO`, u: "day", v: 7.5, n: [2, 1], ft: daily, maxDose: 500, note: `Listede maks doz yok; erişkin tek dozu 500 mg ile sınırlandı`}]},
+ {id: "p-amok", n: `Amoksisilin`, src: `Liste`, fk: "amox", b: `Profilaksi`, r: [
+   {t: `10-20 mg/kg/gün`, route: `PO`, u: "day", v: [10, 15, 20], n: [2, 1], ft: daily}]},
+ {id: "p-sipr", n: `Siprofloksasin`, src: `Liste`, fk: "sipr", b: `Profilaksi`, r: [
+   {t: `10 mg/kg/gün`, route: `PO`, u: "day", v: 10, n: [2, 1], ft: daily, maxDay: 875,
+    note: `Listede "max: 875 mg" yazıyor, günlük kabul edildi; siprofloksasinin 875 mg'lık formu yok, kontrol et`}],
+  foot: `Türkiye'de oral süspansiyonu bulunamadı; tablet formları var`},
+ {id: "p-fluk", n: `Flukonazol`, src: `Liste`, fk: "fluk", b: `Profilaksi`, r: [
+   {t: `6 mg/kg/gün`, route: `PO`, u: "day", v: 6, n: [1], ft: `günde 1 kez`, maxDose: 400}]}
+];
+const CAT = {ab: AB, pr: PR};
+
+function abParams(reg) {
+  const P = [];
+  if (Array.isArray(reg.v)) P.push({k: "v", l: `Doz`, u: reg.ul || UNIT[reg.u], o: reg.v, def: reg.v[0]});
+  if (reg.n.length > 1) P.push({k: "n", l: `Sıklık`, o: reg.n.map(n => ({v: n, t: n === 1 ? `günde 1` : `${n}x`})), def: reg.n[0]});
+  if (reg.route.includes("/")) { const rs = reg.route.split("/"); P.push({k: "rt", l: `Yol`, o: rs.map(x => ({v: x, t: x})), def: rs[0]}); }
+  return P;
+}
+
+function abGen(drug, reg, kg, p, boy) {
+  const v = Array.isArray(reg.v) ? p.v : reg.v;
+  const n = reg.n.length > 1 ? p.n : reg.n[0];
+  const rt = p.rt || reg.route.split("/")[0];
+  const s = bsa(kg, boy);
+  const raw = val => (reg.u === "day" ? val * kg / n : reg.u === "dose" ? val * kg : reg.u === "fixed" ? val : reg.u === "m2day" ? val * s.v / n : val * s.v);
+  const one = val => {
+    let per = raw(val), cap = "";
+    if (reg.maxDose && per > reg.maxDose) { per = reg.maxDose; cap = `${mg(reg.maxDose)} mg/doz`; }
+    if (reg.maxDay && per * n > reg.maxDay) { per = reg.maxDay / n; cap = `${mg(reg.maxDay)} mg/gün`; }
+    return {per, cap};
+  };
+  const r = one(v), per = r.per;
+  const w = r.cap ? [`Maks doz uygulandı (${r.cap}).`] : [];
+  if (reg.kmax && kg >= reg.kmax) w.push(`Bu rejim ${reg.kmax} kg altı için; kilo ${fx(kg, 1)} kg.`);
+  if (reg.kmin && kg < reg.kmin) w.push(`Bu rejim ${reg.kmin} kg ve üstü için; kilo ${fx(kg, 1)} kg.`);
+  const fqt = typeof reg.ft === "function" ? reg.ft(n) : (reg.ft || FQ[n]);
+  const name = drug.on || drug.n, unit = drug.ul || `mg`, src = drug.src || `Protokol`;
+  let L, big, sub;
+  if (reg.combo) {
+    const tot = per * reg.combo.f;
+    L = [`${name} ${mg(tot)} mg ${rt} (${reg.combo.lab} ${mg(per)} mg), ${fqt}`];
+    big = `${mg(per)} mg`;
+    sub = `${reg.combo.lab} · toplam ${mg(tot)} mg · ${FQS[n]}`;
+  } else {
+    L = [`${name} ${mg(per)} ${unit} ${rt}${reg.inf ? `, ${reg.inf}` : ``}, ${fqt}`];
+    big = `${mg(per)} ${unit}`;
+    sub = `doz başına · ${fqt}`;
+  }
+  const I = [];
+  const vals = Array.isArray(reg.v) ? reg.v : [reg.v];
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const rs = lo === hi ? fx(lo, 1) : `${fx(lo, 1)}-${fx(hi, 1)}`;
+  if (reg.u === "fixed") {
+    I.push(`${src}: ${rs} mg/doz, ${n}x (kiloya bağlı değil)`);
+  } else {
+    const plo = raw(lo), phi = raw(hi);
+    I.push(`${src}: ${rs} ${reg.ul || UNIT[reg.u]}, ${n}x = ` + (Math.abs(plo - phi) < 0.05 ? `${mg(plo)} mg/doz` : `${mg(plo)}-${mg(phi)} mg/doz`));
+    const mx = [];
+    if (reg.maxDose) mx.push(`${mg(reg.maxDose)} mg/doz`);
+    if (reg.maxDay) mx.push(`${mg(reg.maxDay)} mg/gün`);
+    I.push(mx.length ? `Maks ${mx.join(", ")}` : (drug.src ? `Listede maks doz yok` : `Protokolde maks doz yok`));
+  }
+  if (reg.u === "m2day" || reg.u === "m2dose") I.push(bsaTxt(s));
+  if (reg.note) I.push(reg.note);
+  if (drug.foot) I.push(drug.foot);
+  const F = rt === "PO" && drug.fk ? formRows(drug.fk, per, fqt) : [];
+  return {big, sub, w, L, I, F};
+}
+
+if (typeof module !== "undefined") module.exports = {EL, AB, PR, FORMS, abGen, abParams, bsa, fx, kPlan, formAmt, formRows};
+
+/* ================= ARAYÜZ ================= */
+if (typeof document !== "undefined") {
+  const S = {sec: "el", g: "ca", m: {}, pv: {}, cv: {}, sel: {ab: null, pr: null}, reg: {ab: {}, pr: {}}, q: "", lines: []};
+  const main = document.getElementById("main");
+  const kgEl = document.getElementById("kg");
+  const boyEl = document.getElementById("boy");
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+  const optOf = o => (typeof o === "object" ? o : {v: o, t: fx(o, 2)});
+  const parseV = v => (/^-?\d+(\.\d+)?$/.test(v) ? Number(v) : v);
+  const norm = s => s.toLocaleLowerCase("tr").replace(/ı/g, "i").replace(/ş/g, "s").replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ö/g, "o").replace(/ç/g, "c").replace(/[^a-z0-9]+/g, " ");
+  const customOn = (key, k) => { const c = (S.cv[key] || {})[k]; return c !== undefined && c !== "" && isFinite(num(c)) && num(c) > 0; };
+
+  function getVals(key, params) {
+    const pv = S.pv[key] || (S.pv[key] = {});
+    const out = {};
+    params.forEach(p => {
+      if (pv[p.k] === undefined) pv[p.k] = p.def;
+      out[p.k] = p.custom && customOn(key, p.k) ? num(S.cv[key][p.k]) : pv[p.k];
+    });
+    return out;
+  }
+
+  function paramsHTML(key, params, vals) {
+    return params.filter(p => !p.show || p.show(vals)).map(p => {
+      const cOn = p.custom && customOn(key, p.k);
+      const chips = p.o.map(optOf).map(o => {
+        const on = !cOn && String(S.pv[key][p.k]) === String(o.v);
+        return `<button type="button" class="chip${on ? " on" : ""}" data-act="pv" data-key="${esc(key)}" data-k="${p.k}" data-v="${esc(o.v)}" aria-pressed="${on}">${esc(o.t)}</button>`;
+      }).join("");
+      const cust = p.custom ? `<input class="cust" id="c-${esc(key.replace(/[^a-z0-9]/gi, "-"))}-${p.k}" data-key="${esc(key)}" data-k="${p.k}" inputmode="decimal" autocomplete="off" placeholder="diğer" value="${esc((S.cv[key] || {})[p.k] || "")}" aria-label="${esc(p.l)}, başka değer">` : "";
+      return `<div class="prow"><div class="plabel">${esc(p.l)}${p.u ? ` <span>${esc(p.u)}</span>` : ""}</div><div class="chips">${chips}${cust}</div></div>`;
+    }).join("");
+  }
+
+  function current() {
+    if (S.sec === "el") {
+      const g = EL.find(x => x.id === S.g);
+      if (!S.m[g.id]) S.m[g.id] = g.m[0].id;
+      const mo = g.m.find(x => x.id === S.m[g.id]);
+      return {key: "el:" + mo.id, params: mo.p || [], calc: (kg, v, boy) => mo.c(kg, v, boy), head: mo.h};
+    }
+    const list = CAT[S.sec], d = list.find(x => x.id === S.sel[S.sec]);
+    if (!d) return null;
+    if (d.c) return {key: `${S.sec}:${d.id}`, params: d.p || [], calc: (kg, v, boy) => d.c(kg, v, boy), head: ""};
+    const ri = S.reg[S.sec][d.id] || 0, reg = d.r[ri];
+    return {key: `${S.sec}:${d.id}:${ri}`, params: abParams(reg), calc: (kg, v, boy) => abGen(d, reg, kg, v, boy), head: d.r.length === 1 ? reg.t : ""};
+  }
+
+  function formsHTML(F) {
+    if (!F || !F.length) return "";
+    return `<div class="forms"><div class="fhead">Piyasa formları · doz başına</div>
+      ${F.map(f => `<button type="button" class="frow${f.cls ? " " + f.cls : ""}"${f.copy ? ` data-act="fcopy" data-copy="${esc(f.copy)}"` : ` disabled`}><span class="fname">${esc(f.n)}</span><span class="famt">${esc(f.txt)}</span></button>`).join("")}
+      <p class="fnote">Satıra dokununca reçete/aile satırı kopyalanır. Tablet yalnız çentikli ve eşit bölünebilen formlarda yarım gösterilir.</p></div>`;
+  }
+
+  function resultHTML(r) {
+    if (!r) { S.lines = []; return `<div class="result empty"><p>Kiloyu gir, order burada çıkar.</p></div>`; }
+    S.lines = r.L;
+    return `<div class="result">
+      <div class="big">${esc(r.big)}</div>${r.sub ? `<div class="sub">${esc(r.sub)}</div>` : ""}
+      ${(r.w || []).map(x => `<p class="warn">${esc(x)}</p>`).join("")}
+      <ol class="order">${r.L.map(x => `<li>${esc(x)}</li>`).join("")}</ol>
+      <button type="button" class="copy" data-act="copy">Orderı kopyala</button>
+      ${(r.I || []).length ? `<ul class="info">${r.I.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+      ${formsHTML(r.F)}
+    </div>`;
+  }
+
+  function updateResult() {
+    const res = document.getElementById("res");
+    if (!res) return;
+    const cur = current();
+    if (!cur) { res.innerHTML = ""; return; }
+    const kg = num(kgEl.value), boy = num(boyEl.value);
+    const vals = getVals(cur.key, cur.params);
+    const ok = isFinite(kg) && kg >= 0.3 && kg <= 200;
+    res.innerHTML = resultHTML(ok ? cur.calc(kg, vals, isFinite(boy) ? boy : 0) : null);
+  }
+
+  function refreshParams() {
+    const cur = current(); const box = document.getElementById("params");
+    if (!cur || !box) return;
+    box.innerHTML = paramsHTML(cur.key, cur.params, getVals(cur.key, cur.params));
+    updateResult();
+  }
+
+  function renderEl() {
+    const g = EL.find(x => x.id === S.g);
+    const cur = current();
+    main.innerHTML = `
+      <div class="chips groups" role="group" aria-label="Elektrolit">${EL.map(x => `<button type="button" class="chip${x.id === g.id ? " on" : ""}" data-act="g" data-v="${x.id}" aria-pressed="${x.id === g.id}">${esc(x.t)}</button>`).join("")}</div>
+      ${g.m.length > 1 ? `<div class="chips modes" role="group" aria-label="Kullanım">${g.m.map(x => `<button type="button" class="chip${x.id === S.m[g.id] ? " on" : ""}" data-act="m" data-v="${x.id}" aria-pressed="${x.id === S.m[g.id]}">${esc(x.t)}</button>`).join("")}</div>` : ""}
+      <p class="head">${esc(cur.head)}</p>
+      <div class="params" id="params">${paramsHTML(cur.key, cur.params, getVals(cur.key, cur.params))}</div>
+      <div id="res"></div>`;
+    updateResult();
+  }
+
+  function drugChips() {
+    const list = CAT[S.sec];
+    const q = S.sec === "ab" ? norm(S.q).trim() : "";
+    const shown = list.filter(d => !q || norm(d.n + " " + d.b).includes(q));
+    if (!shown.length) return `<p class="none">Bu adla ilaç yok.</p>`;
+    return shown.map(d => `<button type="button" class="chip${d.id === S.sel[S.sec] ? " on" : ""}" data-act="d" data-v="${d.id}" aria-pressed="${d.id === S.sel[S.sec]}">${esc(d.n)}</button>`).join("");
+  }
+
+  function cardHTML() {
+    const d = CAT[S.sec].find(x => x.id === S.sel[S.sec]);
+    if (!d) return `<p class="hint">Listeden ilaç seç.</p>`;
+    let regs = "";
+    if (d.r && d.r.length > 1) {
+      const ri = S.reg[S.sec][d.id] || 0;
+      regs = `<div class="chips modes" role="group" aria-label="Endikasyon">${d.r.map((r, i) => `<button type="button" class="chip${i === ri ? " on" : ""}" data-act="r" data-v="${i}" aria-pressed="${i === ri}">${esc(r.t)}</button>`).join("")}</div>`;
+    }
+    const cur = current();
+    return `<div class="drughead"><h2>${esc(d.n)}</h2><p>${esc(d.b)}</p></div>
+      ${regs}${cur.head ? `<p class="head">${esc(cur.head)}</p>` : ""}
+      <div class="params" id="params">${paramsHTML(cur.key, cur.params, getVals(cur.key, cur.params))}</div>
+      <div id="res"></div>`;
+  }
+
+  function renderCat() {
+    const top = S.sec === "ab"
+      ? `<div class="search"><label for="q">İlaç ara</label><input id="q" type="search" placeholder="örn. seftri, vanko, tazocin" value="${esc(S.q)}" autocomplete="off"></div>`
+      : `<p class="head">İmmünoloji profilaksi listesi. Oral formlar için şurup mL ve tablet karşılıkları altta çıkar.</p>`;
+    main.innerHTML = `${top}
+      <div class="chips druglist" id="druglist">${drugChips()}</div>
+      <div id="abcard">${cardHTML()}</div>`;
+    updateResult();
+  }
+
+  function render() {
+    document.querySelectorAll(".seg button").forEach(b => { const on = b.dataset.sec === S.sec; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
+    if (S.sec === "el") renderEl(); else renderCat();
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch (e) {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select(); const ok = document.execCommand("copy"); ta.remove(); return ok;
+      } catch (e2) { return false; }
+    }
+  }
+
+  document.querySelector(".seg").addEventListener("click", e => {
+    const b = e.target.closest("[data-sec]"); if (!b) return;
+    S.sec = b.dataset.sec; render();
+  });
+  kgEl.addEventListener("input", updateResult);
+  boyEl.addEventListener("input", updateResult);
+
+  main.addEventListener("click", async e => {
+    const b = e.target.closest("[data-act]"); if (!b) return;
+    const a = b.dataset.act, v = b.dataset.v;
+    if (a === "g") { S.g = v; renderEl(); }
+    else if (a === "m") { S.m[S.g] = v; renderEl(); }
+    else if (a === "pv") {
+      const key = b.dataset.key, k = b.dataset.k;
+      (S.pv[key] = S.pv[key] || {})[k] = parseV(v);
+      if (S.cv[key]) S.cv[key][k] = "";
+      refreshParams();
+    }
+    else if (a === "d") {
+      S.sel[S.sec] = v;
+      document.getElementById("druglist").innerHTML = drugChips();
+      document.getElementById("abcard").innerHTML = cardHTML();
+      updateResult();
+      const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      document.getElementById("abcard").scrollIntoView({behavior: reduce ? "auto" : "smooth", block: "start"});
+    }
+    else if (a === "r") { S.reg[S.sec][S.sel[S.sec]] = Number(v); document.getElementById("abcard").innerHTML = cardHTML(); updateResult(); }
+    else if (a === "copy") {
+      const ok = await copyText(S.lines.map((l, i) => `${i + 1}. ${l}`).join("\n"));
+      b.textContent = ok ? "Kopyalandı" : "Kopyalanamadı; metni seçip kopyala";
+      setTimeout(() => { b.textContent = "Orderı kopyala"; }, 1600);
+    }
+    else if (a === "fcopy") {
+      const amt = b.querySelector(".famt"), old = amt.textContent;
+      const ok = await copyText(b.dataset.copy);
+      amt.textContent = ok ? "Kopyalandı" : "Kopyalanamadı";
+      setTimeout(() => { amt.textContent = old; }, 1400);
+    }
+  });
+
+  main.addEventListener("input", e => {
+    const t = e.target;
+    if (t.id === "q") { S.q = t.value; document.getElementById("druglist").innerHTML = drugChips(); return; }
+    if (t.classList.contains("cust")) {
+      const key = t.dataset.key, k = t.dataset.k;
+      (S.cv[key] = S.cv[key] || {})[k] = t.value;
+      const on = customOn(key, k);
+      t.closest(".chips").querySelectorAll(".chip").forEach(c => {
+        const act = !on && String(S.pv[key][k]) === c.dataset.v;
+        c.classList.toggle("on", act); c.setAttribute("aria-pressed", act);
+      });
+      updateResult();
+    }
+  });
+
+  render();
+  if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+
+</script>
+</body>
+</html>
